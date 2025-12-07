@@ -2,10 +2,10 @@ const Task = require('../models/Task');
 const User = require('../models/User');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// YOUR KEY
-const genAI = new GoogleGenerativeAI("AIzaSyBemW_uy0ycRtqDTYtd-ZUyAF4LzyAlZQY");
+// SECURE FIX: Read from Environment Variable (Google won't ban this)
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// CRITICAL FIX: Using 2.5-flash
+// Use the working model
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 const userSessions = new Map();
@@ -18,7 +18,7 @@ exports.handleChat = async (req, res) => {
     const user = await User.findById(userId);
     const tasks = await Task.find({ user: userId, status: { $ne: 'Completed' } });
     
-    const taskList = tasks.map(t => `- "${t.title}" (Priority: ${t.priority}, Time: ${t.startTime ? new Date(t.startTime).toLocaleTimeString() : 'Not set'})`).join('\n');
+    const taskList = tasks.map(t => `- "${t.title}" (Priority: ${t.priority})`).join('\n');
     const userMemories = user.preferences && user.preferences.length > 0 
       ? user.preferences.join('\n') 
       : "No learned preferences yet.";
@@ -27,7 +27,7 @@ exports.handleChat = async (req, res) => {
       const session = userSessions.get(userId);
       const lowerMsg = message.toLowerCase();
       
-      if (lowerMsg.includes('yes') || lowerMsg.includes('sure') || lowerMsg.includes('do it')) {
+      if (lowerMsg.includes('yes') || lowerMsg.includes('sure')) {
         let successMsg = "";
         if (session.intent === 'DELETE') {
           await Task.findByIdAndDelete(session.taskId);
@@ -41,29 +41,24 @@ exports.handleChat = async (req, res) => {
         return res.json({ reply: successMsg });
       } else if (lowerMsg.includes('no') || lowerMsg.includes('cancel')) {
         userSessions.delete(userId);
-        return res.json({ reply: "Okay, cancelled." });
+        return res.json({ reply: "Action cancelled." });
       }
     }
 
     const prompt = `
-      You are an intelligent, adaptive personal assistant.
+      You are a smart task assistant.
       [USER MEMORY] ${userMemories}
-      [PENDING TASKS] ${taskList || "No pending tasks."}
-      [TIME] ${new Date().toString()}
+      [TASKS] ${taskList || "None"}
       [INPUT] "${message}"
-
-      Understand intent (Add, Delete, Update, Query, Learn).
-      Check for preferences to learn.
       
-      RESPONSE JSON:
+      Reply JSON ONLY:
       {
         "intent": "ADD" | "DELETE" | "COMPLETE" | "UPDATE" | "QUERY" | "LEARN",
-        "taskTitle": "Extracted title",
-        "newTitle": "New title",
-        "date": "ISO Date string",
-        "priority": "High" | "Medium" | "Low",
-        "learned_fact": "New preference string",
-        "reply": "Conversational response"
+        "taskTitle": "extracted title",
+        "date": "ISO date string",
+        "priority": "Medium",
+        "learned_fact": "new preference",
+        "reply": "friendly response"
       }
     `;
 
@@ -101,20 +96,19 @@ exports.handleChat = async (req, res) => {
       if (!targetTask) return res.json({ reply: `I couldn't find a task named "${aiData.taskTitle}".` });
     }
 
-    if (aiData.intent === 'UPDATE' && targetTask) {
-      if (aiData.date) { targetTask.deadline = aiData.date; targetTask.startTime = aiData.date; }
-      if (aiData.priority) targetTask.priority = aiData.priority;
-      if (aiData.newTitle) targetTask.title = aiData.newTitle;
-      await targetTask.save();
-      return res.json({ reply: aiData.reply });
+    if (aiData.intent === 'UPDATE') {
+       if(aiData.date) targetTask.deadline = aiData.date;
+       if(aiData.priority) targetTask.priority = aiData.priority;
+       await targetTask.save();
+       return res.json({ reply: aiData.reply });
     }
 
-    if (aiData.intent === 'DELETE' && targetTask) {
+    if (aiData.intent === 'DELETE') {
       userSessions.set(userId, { intent: 'DELETE', taskId: targetTask._id, taskTitle: targetTask.title });
-      return res.json({ reply: `⚠️ Are you sure you want to delete "${targetTask.title}"?` });
+      return res.json({ reply: `⚠️ Delete "${targetTask.title}"?` });
     }
 
-    if (aiData.intent === 'COMPLETE' && targetTask) {
+    if (aiData.intent === 'COMPLETE') {
       userSessions.set(userId, { intent: 'COMPLETE', taskId: targetTask._id, taskTitle: targetTask.title });
       return res.json({ reply: `Did you finish "${targetTask.title}"?` });
     }
@@ -123,8 +117,6 @@ exports.handleChat = async (req, res) => {
 
   } catch (error) {
     console.error("AI Error:", error);
-    res.json({ reply: "I'm having a bit of trouble connecting to my memory." });
+    res.json({ reply: "I'm having trouble connecting right now." });
   }
 };
-
-// Final AI Fix Force Update
