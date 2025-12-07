@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// Automatically use Cloud URL if built for production, otherwise use Localhost
+// Automatically switch between Localhost (for coding) and Render (for live site)
 const BASE_URL = import.meta.env.MODE === 'production' 
-  ? 'https://daily-tracker-bnnh.onrender.com/api' 
+  ? 'https://daily-tracker-api-emcw.onrender.com/api' 
   : 'http://localhost:5000/api';
 
 const api = axios.create({
