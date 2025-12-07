@@ -1,10 +1,12 @@
-import { useState } from 'react'; import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom'; // Imported useNavigate
 import api from '../utils/api';
 import './Auth.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate(); // Initialize navigation hook
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -12,7 +14,7 @@ const Login = () => {
       const { data } = await api.post('/auth/login', { email, password });
       localStorage.setItem('token', data.token);
       alert('Login Successful!');
-      // We will redirect here later
+      navigate('/dashboard'); // <--- THIS WAS MISSING. Now it redirects!
     } catch (err) {
       alert(err.response?.data?.message || 'Login Failed');
     }
@@ -45,7 +47,7 @@ const Login = () => {
           </div>
           <button type="submit" className="auth-btn">Sign In</button>
         </form>
-<p style={{ marginTop: '20px', color: '#A0A3AD', fontSize: '14px' }}>
+        <p style={{ marginTop: '20px', color: '#A0A3AD', fontSize: '14px' }}>
           Don't have an account? <Link to="/register" style={{ color: '#B467FF' }}>Sign Up</Link>
         </p>
       </div>
