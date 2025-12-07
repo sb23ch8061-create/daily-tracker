@@ -1,0 +1,27 @@
+:root {
+  --bg-primary: #0E0F17;
+  --bg-card: #181A24;
+  --text-primary: #FFFFFF;
+  --text-secondary: #A0A3AD;
+  --accent-green: #6BFF2C;
+  --accent-purple: #B467FF;
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Reset inputs to look good in dark mode */
+input, button {
+  font-family: inherit;
+  outline: none;
+}
+
+* {
+  box-sizing: border-box;
+}
