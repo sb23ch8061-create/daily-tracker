@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // Added
-import { Plus, Zap, Trash2, CheckCircle, Circle, Edit2, Play } from 'lucide-react'; // Added Play
+import { useNavigate } from 'react-router-dom';
+import { Plus, Zap, Trash2, CheckCircle, Circle, Edit2, Play } from 'lucide-react';
 import Layout from '../components/Layout';
 import TaskModal from '../components/TaskModal';
 import api from '../utils/api';
 
 const Dashboard = () => {
-  const navigate = useNavigate(); // Added
+  const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [tasks, setTasks] = useState([]);
@@ -40,11 +40,19 @@ const Dashboard = () => {
     } catch (err) { alert('Error updating task'); }
   };
 
+  // UPDATED: Automatically Reschedule after Delete
   const handleDelete = async (id) => {
     if(!window.confirm('Delete this task?')) return;
     try {
+      // 1. Delete the task
       await api.delete(`/tasks/${id}`);
+      
+      // 2. Trigger Auto-Schedule to fill the gap
+      await api.post('/tasks/auto-schedule');
+      
+      // 3. Refresh the view
       fetchTasks();
+      // Optional: alert('Task deleted and schedule updated!'); 
     } catch (err) { alert('Error deleting task'); }
   };
 
