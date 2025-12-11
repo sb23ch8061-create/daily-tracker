@@ -8,10 +8,15 @@ const mongoose = require('mongoose');
 // Import Routes
 const authRoutes = require('./routes/authRoutes');
 const taskRoutes = require('./routes/taskRoutes');
+const weeklyRoutes = require('./routes/weeklyRoutes');
+const scheduleRoutes = require('./routes/scheduleRoutes'); // <--- New Schedule Logic
+const feedbackRoutes = require('./routes/feedbackRoutes');
 
 // Config
 dotenv.config();
-const app = express(); // <--- app is created here
+
+// --- CRITICAL FIX: Initialize 'app' BEFORE using it ---
+const app = express(); 
 
 // Middleware
 app.use(express.json());
@@ -31,8 +36,12 @@ const connectDB = async () => {
 };
 
 // Routes
+// (These must come AFTER 'const app = express()')
 app.use('/api/auth', authRoutes);
-app.use('/api/tasks', taskRoutes); // <--- Now it is used AFTER creation
+app.use('/api/tasks', taskRoutes);
+app.use('/api/weekly', weeklyRoutes);
+app.use('/api/schedule', scheduleRoutes); // <--- This activates your new Schedule features
+app.use('/api/feedback', feedbackRoutes);
 
 app.get('/', (req, res) => {
   res.send('API is running...');

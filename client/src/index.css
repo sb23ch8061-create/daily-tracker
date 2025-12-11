@@ -1,27 +1,63 @@
 :root {
+  /* --- DARK MODE DEFAULTS --- */
   --bg-primary: #0E0F17;
   --bg-card: #181A24;
+  --bg-element: #222222;      /* For tasks/items inside cards */
+  --bg-grid: #121218;         /* For Schedule Background */
   --text-primary: #FFFFFF;
   --text-secondary: #A0A3AD;
   --accent-green: #6BFF2C;
   --accent-purple: #B467FF;
+  --border-color: rgba(255, 255, 255, 0.1); /* Dark mode border */
+  
   font-family: 'Inter', sans-serif;
+  --bg-main: var(--bg-primary);
 }
 
 body {
   margin: 0;
-  background-color: var(--bg-primary);
+  background-color: var(--bg-main);
   color: var(--text-primary);
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s, color 0.3s;
 }
 
-/* Reset inputs to look good in dark mode */
-input, button {
+input, button, select, textarea {
   font-family: inherit;
   outline: none;
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* --- LIGHT MODE OVERRIDES --- */
+:root[data-theme="light"] {
+  --bg-primary: #F4F5F7;       
+  --bg-main: #F4F5F7;
+  --bg-card: #FFFFFF;          
+  --bg-element: #F4F5F7;       /* Light gray for items */
+  --bg-grid: #FFFFFF;          /* White grid background */
+  
+  --text-primary: #172B4D;     
+  --text-secondary: #5E6C84;   
+  
+  --accent-green: #00875A;     
+  --accent-purple: #5E4DB2;    
+  
+  --border-color: rgba(0, 0, 0, 0.1); /* Light mode border */
+}
+
+/* Fix Inputs */
+:root[data-theme="light"] .form-input {
+  background-color: #FFFFFF;
+  border: 1px solid #DFE1E6;
+  color: #172B4D;
+}
+
+/* Fix Dropdown Options */
+option {
+  background-color: var(--bg-card);
+  color: var(--text-primary);
 }

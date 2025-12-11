@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Zap, Trash2, CheckCircle, Circle, Edit2, Play, Loader } from 'lucide-react'; // Added Loader
+import { Plus, Zap, Trash2, CheckCircle, Circle, Edit2, Play, Loader } from 'lucide-react';
 import Layout from '../components/Layout';
 import TaskModal from '../components/TaskModal';
 import api from '../utils/api';
@@ -11,7 +11,7 @@ const Dashboard = () => {
   const [editingTask, setEditingTask] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [nlpText, setNlpText] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false); // New Loading State
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const fetchTasks = async () => {
     try {
@@ -25,15 +25,15 @@ const Dashboard = () => {
   const handleNlpSubmit = async (e) => {
     e.preventDefault();
     if (!nlpText.trim()) return;
-    setIsProcessing(true); // Start loading
+    setIsProcessing(true);
     try {
       await api.post('/tasks/nlp', { text: nlpText });
-      await api.post('/tasks/auto-schedule'); // Auto-schedule immediately after add
+      await api.post('/tasks/auto-schedule');
       setNlpText('');
       await fetchTasks();
       alert('Task added and schedule updated!');
     } catch (err) { alert('Failed to parse text'); }
-    setIsProcessing(false); // Stop loading
+    setIsProcessing(false);
   };
 
   const toggleComplete = async (task) => {
@@ -44,16 +44,15 @@ const Dashboard = () => {
     } catch (err) { alert('Error updating task'); }
   };
 
-  // ROBUST DELETE: Waits for Reschedule
   const handleDelete = async (id) => {
     if(!window.confirm('Delete this task?')) return;
-    setIsProcessing(true); // Lock screen
+    setIsProcessing(true);
     try {
       await api.delete(`/tasks/${id}`);
-      await api.post('/tasks/auto-schedule'); // Force recalculation
-      await fetchTasks(); // Get new order
+      await api.post('/tasks/auto-schedule');
+      await fetchTasks();
     } catch (err) { alert('Error deleting task'); }
-    setIsProcessing(false); // Unlock
+    setIsProcessing(false);
   };
 
   const openEditModal = (task) => {
@@ -111,7 +110,15 @@ const Dashboard = () => {
             placeholder="Type naturally: 'Gym tomorrow at 6am for 1 hour'"
             value={nlpText}
             onChange={(e) => setNlpText(e.target.value)}
-            style={{ width: '100%', padding: '16px 16px 16px 50px', backgroundColor: 'var(--bg-card)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', color: 'white', fontSize: '16px' }}
+            style={{ 
+                width: '100%', 
+                padding: '16px 16px 16px 50px', 
+                backgroundColor: 'var(--bg-card)', 
+                border: '1px solid rgba(128,128,128,0.2)', // Slightly darker border for light mode visibility
+                borderRadius: '16px', 
+                color: 'var(--text-primary)', // <--- FIXED: Uses variable instead of 'white'
+                fontSize: '16px' 
+            }}
           />
         </form>
 
